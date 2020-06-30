@@ -1,0 +1,17 @@
+body {
+    background-image: url(../images/bg.jpeg);
+    background-size: cover;
+}
+
+.btn__order {
+    align-self: flex-end
+}
+
+.item__info{
+    height: 6rem;
+}
+
+.item-card__img {
+    height: 150px;
+    width: 200px;
+}
