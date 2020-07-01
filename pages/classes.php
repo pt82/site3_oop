@@ -322,7 +322,7 @@ class Item {
         try {
             $pdo = Tools::connect();
             $ruser='cart';
-          if($_SESSION['ruser']!==NULL) {
+            if(!isset($_SESSION['ruser']) || ($_SESSION['ruser'] !==null)){
               $ruser = $_SESSION['ruser'];
           }
           $upd= "UPDATE customers SET total=total+? WHERE login=?";
@@ -339,71 +339,7 @@ class Item {
         }
     }
 
-//    function SMTP($id_result){
-//        //подключаем модуль PHPMaller
-//        require_once("PHPMailer/PHPMailerAutoload.php");
-//        require_once("private_data.php");
-//        $mail = new PHPMailer;
-//        $mail->CharSet="UTF-8";
-//
-//        //
-//        $mail->isSmTP();
-//        $mail->SMTPAuth=true;
-//        $mail->Host='ssl://smtp.mail.ru';
-//        $mail->Port = 465;
-//        $mail->Username=MAIL;
-//        $mail->Password=PASS;
-//    //от кого приходит письмо
-//
-//    $mail->setFrom('pt.82@mail.ru', 'SHOP PETR');
-//
-//    //кому 
-//    $mail->addAddress('pt.82@mail.ru', 'ADMIN');
-//
-//    //тема письма
-//    $mail->Subject = 'Новый заказ на сайте PETR';
-//
-//    //тело письма
-//    $body = "<table cellspacing='0' cellpading='0' border='2' width='800' style='background-color:green!important'>";
-//    $i=0;
-//    foreach ($id_result as $id) {
-//
-//        $item =self::fromDb($id);
-//        array_push($arrItem, $item->image);
-//        $mail->AddEmbeddedImage($item->imagepath, 'item'.++$i);
-//        $body .= "<tr><th>$item->itemname</th><td>$item->pricesale</td><td>$item->info</td><td><img src='cid:item'></td></tr>";
-//    }
-//    $body .= '</table>';
-//
-//    $mail->msgHTML($body);
-//    $mail->send();
-//
-//    //csv
-//
-////    try{
-////        $csv = new CSV("private/exel_pr.csv");
-////        $csv->setCSV($arrItem);
-////
-////    }catch (Exeption $e) {
-////        echo "Error:" . $e->getMessage();
-////    }
-////    }
-////    class CSV {
-////        private $csv_file=null;
-////        public function __construct($csv_file) {
-////            $this->csv_file = $csv_file;
-////        }
-////        function setCSV($arrItem){
-////            //открываем csv файл для дозаписи
-////            $file = fopen($this->csv_file, 'a+') 
-////            foreach (arrItem as $item) {
-////               fputcsv($file, [$item]);
-////            }
-////        }
-////        fclose($file);
-////    }
-//}
-//}
+
 
 function SMTP($id_result) {
     // подключить моудль PHPMailer
@@ -423,20 +359,22 @@ function SMTP($id_result) {
     $mail->Password = PASS;
 
     // от кого
-    $mail->setFrom('pt.82@mail.ru', 'SHOP internet');
+    $mail->setFrom('pt.82@mail.ru', 'Тимофеев Петр');
 
     // кому
     $mail->addAddress('pt.82@mail.ru', 'ADMIN');
 
     // тема письма
-    $mail->Subject = 'Новый заказ на сайте SHOP internet';
+    $mail->Subject = 'Домашнее задание';
 
     // Тело письма
     $body = "<table cellspacing='0' cellpadding='0' border='2' width='800' style='background-color: orange!important'>";
 
-     $i = 0;
+
     foreach ($id_result as $id) {
         $item = self::fromDb($id);
+        $arrItem[] = "$item->itemname;$item->pricesale;$item->info";
+         
         $cid=$item->imagepath;
         $mail->AddEmbeddedImage($item->imagepath, $cid);
        
@@ -452,5 +390,38 @@ function SMTP($id_result) {
 
     $mail->msgHTML($body);
     $mail->send();
+
+    //csv
+    try {
+        $csv = new CSV ("private/excel_file.csv");
+        $csv->setCSV($arrItem);
+    } catch (Exeption $e) {
+        echo "ERROR" .$e->getMessage();
+    }
 }
 }
+
+
+class CSV{
+    private $csv_file = null;
+
+    public function __construct($csv_file) {
+        $this->csv_file = $csv_file;
+    }
+    function setCSV($arrItem) {
+        $file = fopen($this->csv_file, 'a+');
+             foreach ($arrItem as $item) {
+            fputcsv($file, explode(";", $item), ';');
+         }
+        $csv_text = file_get_contents($this->csv_file);
+        $csv_text_converted = mb_convert_encoding($csv_text, "CP1251", "UTF-8");
+        if ($csv_text_converted) {
+            file_put_contents($this->csv_file, $csv_text_converted);
+        }
+        fclose($file);
+
+    }
+
+}
+
+
